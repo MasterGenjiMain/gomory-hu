@@ -3,15 +3,17 @@ package com.university.master.gomoryhu.Service;
 import com.university.master.gomoryhu.Service.Entity.Graph;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.*;
 
 public class GomoryHuAlgorithm {
 
     private Graph calculateRingGraph(Graph inputGraph) {
         double[][] inputAdjMatrix = inputGraph.getAdjMatrix();
-        int graphVertexCount = getCurrentNumberOfEdges(inputAdjMatrix) / 2; //ToDo: fir vertex count
-        Graph ringGraph = new Graph(graphVertexCount);
-        double ringGraphEdgeValue = getGraphEdgeValue(inputAdjMatrix) / 2;  //move to params later
+        int[] existedVertexes = getExistedVertexes(inputAdjMatrix);
+        int graphVertexCount = existedVertexes.length;
+
+        Graph ringGraph = new Graph(inputGraph.getVertexCount());
+        double ringGraphEdgeValue = getMinGraphEdgeValue(inputAdjMatrix) / 2;  //move to params later
 
         for (int i = 0, j = 1; i < graphVertexCount; i++, j++) {
             if (j == graphVertexCount) {
@@ -25,25 +27,38 @@ public class GomoryHuAlgorithm {
 
     private Graph calculateSubnetwork(Graph inputGraph) {
         double[][] snAdjMatrix = inputGraph.getAdjMatrix();
-        double ringGraphEdgeValue = getGraphEdgeValue(snAdjMatrix);    //move to params later
+        double igMinEdgeValue = getMinGraphEdgeValue(snAdjMatrix);
 
         for (int i = 0; i < snAdjMatrix.length; i++) {
             for (int j = 0; j < snAdjMatrix[i].length; j++) {
                 if (snAdjMatrix[i][j] > 0)  {
                     snAdjMatrix[i][j] = BigDecimal.valueOf(snAdjMatrix[i][j])
-                            .subtract(BigDecimal.valueOf(ringGraphEdgeValue))
+                            .subtract(BigDecimal.valueOf(igMinEdgeValue))
                             .doubleValue();
                 }
             }
         }
 
-        int snGraphVertexCount = getCurrentNumberOfEdges(snAdjMatrix) / 2;  //ToDo: fir vertex count
-        Graph snGraph = new Graph(snGraphVertexCount);
+        Graph snGraph = new Graph(inputGraph.getVertexCount());
         snGraph.setAdjMatrix(snAdjMatrix);
         return snGraph;
     }
 
-    private double getGraphEdgeValue(double[][] adjMatrix) {
+    private int[] getExistedVertexes(double[][] adjMatrix) {
+        Set<Integer> existedVertexes = new HashSet<>();
+
+        for (int i = 0; i < adjMatrix.length; i++) {
+            for (int j = 0; j < adjMatrix[i].length; j++) {
+                if (adjMatrix[i][j] > 0)  {
+                    existedVertexes.add(j);
+                }
+            }
+        }
+
+        return existedVertexes.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private double getMinGraphEdgeValue(double[][] adjMatrix) {
         return Arrays.stream(adjMatrix)
                 .flatMapToDouble(Arrays::stream)
                 .filter(value -> value > 0)
@@ -63,11 +78,22 @@ public class GomoryHuAlgorithm {
         g.addEdge(1,2, 15.8);
         g.addEdge(2,3, 15.5);
         g.addEdge(3,0, 40.2);
+        System.out.println("Original graph");
         System.out.println(g);
-        System.out.println(getGraphEdgeValue(g.getAdjMatrix()));
         System.out.println("----------");
+        System.out.println(getMinGraphEdgeValue(g.getAdjMatrix()) + " - min graph edge value");
+        System.out.println("----------");
+        System.out.println("Ring graph");
         System.out.println(calculateRingGraph(g));
         System.out.println("----------");
-        System.out.println(calculateSubnetwork(g));
+        System.out.println("Sn graph");
+        Graph Sngraph = calculateSubnetwork(g);
+        System.out.println(Sngraph);
+        System.out.println("-------");
+        System.out.println("Existed vertexes in original graph");
+        System.out.println(Arrays.toString(getExistedVertexes(g.getAdjMatrix())));
+        System.out.println("-------");
+        System.out.println("Existed vertexes in Sn graph");
+        System.out.println(Arrays.toString(getExistedVertexes(Sngraph.getAdjMatrix())));
     }
 }

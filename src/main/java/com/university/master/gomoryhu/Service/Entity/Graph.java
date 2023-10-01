@@ -7,26 +7,26 @@ import org.springframework.stereotype.Service;
 @NoArgsConstructor
 public class Graph {
 
-    private int vertex; //vertexes
-    private int edge; //edges
+    private int vertexCount; //vertexes
+    private int edgeCount; //edges
     private double[][] adjMatrix;
 
     public Graph(int nodes) {
-        this.vertex = nodes;
-        this.edge = 0;
+        this.vertexCount = nodes;
+        this.edgeCount = 0;
         this.adjMatrix = new double[nodes][nodes];
     }
 
     public void addEdge(int u, int v, double value) {
         adjMatrix[u][v] = value;
         adjMatrix[v][u] = value;
-        edge++;
+        edgeCount++;
     }
 
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(vertex).append(" vertices, ").append(edge).append(" edges ").append("\n");
-        for (int v = 0; v < vertex; v++) {
+        stringBuilder.append(vertexCount).append(" vertices, ").append(edgeCount).append(" edges ").append("\n");
+        for (int v = 0; v < vertexCount; v++) {
             stringBuilder.append(v).append(": ");
             for (double w : adjMatrix[v]) {
                 stringBuilder.append(w).append(" ");
@@ -44,7 +44,11 @@ public class Graph {
         this.adjMatrix = adjMatrix;
     }
 
-    public void setEdge(int edge) {
-        this.edge = edge;
+    public void setEdgeCount(int edgeCount) {
+        this.edgeCount = edgeCount;
+    }
+
+    public int getVertexCount() {
+        return vertexCount;
     }
 }
