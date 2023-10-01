@@ -10,17 +10,17 @@ public class GomoryHuAlgorithm {
     private Graph calculateRingGraph(Graph inputGraph) {
         double[][] inputAdjMatrix = inputGraph.getAdjMatrix();
         int[] existedVertexes = getExistedVertexes(inputAdjMatrix);
-        int graphVertexCount = existedVertexes.length;
+        int existedVertexesLength = existedVertexes.length;
 
         Graph ringGraph = new Graph(inputGraph.getVertexCount());
         double ringGraphEdgeValue = getMinGraphEdgeValue(inputAdjMatrix) / 2;  //move to params later
 
-        for (int i = 0, j = 1; i < graphVertexCount; i++, j++) {
-            if (j == graphVertexCount) {
-                ringGraph.addEdge(i,0, ringGraphEdgeValue);
+        for (int i = 0, j = 1; i < existedVertexesLength; i++, j++) {
+            if (j == existedVertexesLength) {
+                ringGraph.addEdge(existedVertexes[i],existedVertexes[0], ringGraphEdgeValue);
                 break;
             }
-            ringGraph.addEdge(i, j, ringGraphEdgeValue);
+            ringGraph.addEdge(existedVertexes[i], existedVertexes[j], ringGraphEdgeValue);
         }
         return ringGraph;
     }

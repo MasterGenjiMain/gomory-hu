@@ -1,5 +1,5 @@
 # Gomory-Hu
 
 # Abbreviation list
-ig - input graph
-sn - subnetwork
+ig - input graph <br />
+sn - subnetwork <br />
