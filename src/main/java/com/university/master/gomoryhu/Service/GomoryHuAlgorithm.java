@@ -1,10 +1,15 @@
 package com.university.master.gomoryhu.Service;
 
+import com.university.master.gomoryhu.Service.Entity.Edge;
 import com.university.master.gomoryhu.Service.Entity.Graph;
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
 
+@Service
+@NoArgsConstructor
 public class GomoryHuAlgorithm {
 
     private Graph calculateRingGraph(Graph inputGraph) {
@@ -17,7 +22,7 @@ public class GomoryHuAlgorithm {
 
         for (int i = 0, j = 1; i < existedVertexesLength; i++, j++) {
             if (j == existedVertexesLength) {
-                ringGraph.addEdge(existedVertexes[i],existedVertexes[0], ringGraphEdgeValue);
+                ringGraph.addEdge(existedVertexes[i], existedVertexes[0], ringGraphEdgeValue);
                 break;
             }
             ringGraph.addEdge(existedVertexes[i], existedVertexes[j], ringGraphEdgeValue);
@@ -31,7 +36,7 @@ public class GomoryHuAlgorithm {
 
         for (int i = 0; i < snAdjMatrix.length; i++) {
             for (int j = 0; j < snAdjMatrix[i].length; j++) {
-                if (snAdjMatrix[i][j] > 0)  {
+                if (snAdjMatrix[i][j] > 0) {
                     snAdjMatrix[i][j] = BigDecimal.valueOf(snAdjMatrix[i][j])
                             .subtract(BigDecimal.valueOf(igMinEdgeValue))
                             .doubleValue();
@@ -49,7 +54,7 @@ public class GomoryHuAlgorithm {
 
         for (int i = 0; i < adjMatrix.length; i++) {
             for (int j = 0; j < adjMatrix[i].length; j++) {
-                if (adjMatrix[i][j] > 0)  {
+                if (adjMatrix[i][j] > 0) {
                     existedVertexes.add(j);
                 }
             }
@@ -72,12 +77,14 @@ public class GomoryHuAlgorithm {
                 .filter(value -> value > 0.0)
                 .count();
     }
-    public void showGraph() {
+
+    public void showGraph(List<Edge> edges) {
         Graph g = new Graph(4);
-        g.addEdge(0,1, 22);
-        g.addEdge(1,2, 15.8);
-        g.addEdge(2,3, 15.5);
-        g.addEdge(3,0, 40.2);
+
+        for (Edge edge : edges) {
+            g.addEdge(edge.getFrom(), edge.getTo(), edge.getValue());
+        }
+
         System.out.println("Original graph");
         System.out.println(g);
         System.out.println("----------");

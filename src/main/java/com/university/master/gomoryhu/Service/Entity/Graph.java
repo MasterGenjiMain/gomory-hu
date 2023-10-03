@@ -1,14 +1,17 @@
 package com.university.master.gomoryhu.Service.Entity;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @NoArgsConstructor
 public class Graph {
 
-    private int vertexCount; //vertexes
-    private int edgeCount; //edges
+    @Getter
+    private int vertexCount;
+    private int edgeCount;
+    @Getter
     private double[][] adjMatrix;
 
     public Graph(int nodes) {
@@ -36,10 +39,6 @@ public class Graph {
         return stringBuilder.toString();
     }
 
-    public double[][] getAdjMatrix() {
-        return adjMatrix;
-    }
-
     public void setAdjMatrix(double[][] adjMatrix) {
         this.adjMatrix = adjMatrix;
     }
@@ -48,7 +47,4 @@ public class Graph {
         this.edgeCount = edgeCount;
     }
 
-    public int getVertexCount() {
-        return vertexCount;
-    }
 }
