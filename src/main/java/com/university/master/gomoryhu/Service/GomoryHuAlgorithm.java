@@ -12,6 +12,48 @@ import java.util.*;
 @NoArgsConstructor
 public class GomoryHuAlgorithm {
 
+    private double calculateByClassicMethod(Graph inputGraph) {
+        Graph currentGraph = inputGraph;
+        List<double[][]> ringGraphs = new ArrayList<>();
+
+        while (getCurrentNumberOfEdges(currentGraph.getAdjMatrix()) > 2) {
+            ringGraphs.add(calculateRingGraph(currentGraph).getAdjMatrix());
+            currentGraph = calculateSubnetwork(currentGraph);
+        }
+
+        int rows = ringGraphs.get(0).length;
+        int cols = ringGraphs.get(0)[0].length;
+
+        double[][] sumRingMatrix = new double[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (double[][] matrix : ringGraphs) {
+                    sumRingMatrix[i][j] += matrix[i][j];
+                }
+            }
+        }
+
+        double[][] finalMatrix = new double[rows][cols];
+        double[][] currentAdjMatrix = currentGraph.getAdjMatrix();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                finalMatrix[i][j] = sumRingMatrix[i][j] + currentAdjMatrix[i][j];
+            }
+        }
+
+        double result = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                result += finalMatrix[i][j];
+            }
+        }
+
+        result = result / 2;
+
+        return result;
+    }
+
     private Graph calculateRingGraph(Graph inputGraph) {
         double[][] inputAdjMatrix = inputGraph.getAdjMatrix();
         int[] existedVertexes = getExistedVertexes(inputAdjMatrix);
@@ -31,8 +73,13 @@ public class GomoryHuAlgorithm {
     }
 
     private Graph calculateSubnetwork(Graph inputGraph) {
-        double[][] snAdjMatrix = inputGraph.getAdjMatrix();
-        double igMinEdgeValue = getMinGraphEdgeValue(snAdjMatrix);
+        double[][] inputMatrix = inputGraph.getAdjMatrix();
+        double[][] snAdjMatrix = new double[inputMatrix.length][inputMatrix[0].length];
+        double igMinEdgeValue = getMinGraphEdgeValue(inputMatrix);
+
+        for (int i = 0; i < inputMatrix.length; i++) {
+            snAdjMatrix[i] = Arrays.copyOf(inputMatrix[i], inputMatrix[i].length);
+        }
 
         for (int i = 0; i < snAdjMatrix.length; i++) {
             for (int j = 0; j < snAdjMatrix[i].length; j++) {
@@ -78,12 +125,18 @@ public class GomoryHuAlgorithm {
                 .count();
     }
 
-    public void showGraph(List<Edge> edges) {
-        Graph g = new Graph(4);
+    private Graph buildGraphByEdges(List<Edge> edges) {
+        Graph graph = new Graph(edges.size());
 
         for (Edge edge : edges) {
-            g.addEdge(edge.getFrom(), edge.getTo(), edge.getValue());
+            graph.addEdge(edge.getFrom(), edge.getTo(), edge.getValue());
         }
+
+        return graph;
+    }
+
+    public double showResultByClassicMethod(List<Edge> edges) {
+        Graph g = buildGraphByEdges(edges);
 
         System.out.println("Original graph");
         System.out.println(g);
@@ -102,5 +155,13 @@ public class GomoryHuAlgorithm {
         System.out.println("-------");
         System.out.println("Existed vertexes in Sn graph");
         System.out.println(Arrays.toString(getExistedVertexes(Sngraph.getAdjMatrix())));
+
+        return calculateByClassicMethod(g);
+    }
+
+    public double showResultWithAdaptingToOTN(List<Edge> edges) {
+        Graph g = buildGraphByEdges(edges);
+        g.adaptToOTN();
+        return calculateByClassicMethod(g);
     }
 }

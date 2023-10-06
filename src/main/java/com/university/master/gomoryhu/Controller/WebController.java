@@ -17,15 +17,25 @@ public class WebController {
 
     @GetMapping("/")
     public String mainPage() {
+        gomoryHuAlgorithm.showResultByClassicMethod(setupTestEdges());
+        return "Classic algorithm looks fine";
+    }
+
+    @GetMapping("/classic-OTN")
+    public String classicOTN() {
+        gomoryHuAlgorithm.showResultWithAdaptingToOTN(setupTestEdges());
+        return "Adapted algorithm looks fine";
+    }
+
+    private List<Edge> setupTestEdges() {
         // Later here will be implemented connection with UI.
         // UI planned to be some space where we can draw a graph that represent a network between datahubs with
         // entered network capacity
-        List<Edge> edges = new ArrayList<>();   //Temporary placeholder
-        edges.add(new Edge(0,1,22));
-        edges.add(new Edge(1,2,15.8));
-        edges.add(new Edge(2,3,15.5));
-        edges.add(new Edge(3,0,40.2));
-        gomoryHuAlgorithm.showGraph(edges);
-        return "Looks fine";
+        List<Edge> edges = new ArrayList<>();
+        edges.add(new Edge(0, 1, 22));
+        edges.add(new Edge(1, 2, 15.8));
+        edges.add(new Edge(2, 3, 15.5));
+        edges.add(new Edge(3, 0, 40.2));
+        return edges;
     }
 }
