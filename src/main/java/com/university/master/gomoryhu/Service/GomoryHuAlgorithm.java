@@ -1,18 +1,23 @@
 package com.university.master.gomoryhu.Service;
 
 import com.university.master.gomoryhu.Service.Entity.Edge;
+import com.university.master.gomoryhu.Service.Entity.GomoryHuResult;
 import com.university.master.gomoryhu.Service.Entity.Graph;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
 @NoArgsConstructor
 public class GomoryHuAlgorithm {
 
-    private double calculateByClassicMethod(Graph inputGraph) {
+    private static final BigDecimal TWO = new BigDecimal(2);
+    private static final int SCALE_TO_FOUR = 4;
+
+    private GomoryHuResult calculateByClassicMethod(Graph inputGraph, boolean castResultToOtn) {
         Graph currentGraph = inputGraph;
         List<double[][]> ringGraphs = new ArrayList<>();
 
@@ -38,20 +43,45 @@ public class GomoryHuAlgorithm {
         double[][] currentAdjMatrix = currentGraph.getAdjMatrix();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                finalMatrix[i][j] = sumRingMatrix[i][j] + currentAdjMatrix[i][j];
+                finalMatrix[i][j] = BigDecimal.valueOf(sumRingMatrix[i][j])
+                        .add(BigDecimal.valueOf(currentAdjMatrix[i][j]))
+                        .doubleValue();
             }
         }
 
-        double result = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                result += finalMatrix[i][j];
-            }
+
+        BigDecimal classicResult = sumMatrixElements(finalMatrix);
+        classicResult = divideByTwoBigDecimalValue(classicResult);
+
+        BigDecimal adaptedToOtnResult = new BigDecimal(-1);
+
+        if (castResultToOtn) {
+            OtnAdapter.adapt(finalMatrix);  //Adapting final matrix to OTN standard
+
+            adaptedToOtnResult = sumMatrixElements(finalMatrix);
+            adaptedToOtnResult = divideByTwoBigDecimalValue(adaptedToOtnResult);
         }
 
-        result = result / 2;
+        return GomoryHuResult.builder()
+                .classicResult(classicResult)
+                .adaptedToOtnResult(adaptedToOtnResult)
+                .build();
+    }
+
+    private BigDecimal sumMatrixElements(double[][] inputMatrix) {
+        BigDecimal result = new BigDecimal(0);
+
+        for (int i = 0; i < inputMatrix.length; i++) {
+            for (int j = 0; j < inputMatrix[0].length; j++) {
+                result = result.add(BigDecimal.valueOf(inputMatrix[i][j]));
+            }
+        }
 
         return result;
+    }
+
+    private BigDecimal divideByTwoBigDecimalValue(BigDecimal inputBigDecimal) {
+        return inputBigDecimal.divide(TWO, SCALE_TO_FOUR, RoundingMode.CEILING);
     }
 
     private Graph calculateRingGraph(Graph inputGraph) {
@@ -135,7 +165,7 @@ public class GomoryHuAlgorithm {
         return graph;
     }
 
-    public double showResultByClassicMethod(List<Edge> edges) {
+    public GomoryHuResult showResultByClassicMethod(List<Edge> edges) {
         Graph g = buildGraphByEdges(edges);
 
         System.out.println("Original graph");
@@ -156,12 +186,12 @@ public class GomoryHuAlgorithm {
         System.out.println("Existed vertexes in Sn graph");
         System.out.println(Arrays.toString(getExistedVertexes(Sngraph.getAdjMatrix())));
 
-        return calculateByClassicMethod(g);
+        return calculateByClassicMethod(g, true);
     }
 
-    public double showResultWithAdaptingToOTN(List<Edge> edges) {
+    public GomoryHuResult showResultWithAdaptingToOTN(List<Edge> edges) {
         Graph g = buildGraphByEdges(edges);
-        g.adaptToOTN();
-        return calculateByClassicMethod(g);
+        OtnAdapter.adapt(g.getAdjMatrix());
+        return calculateByClassicMethod(g, false);
     }
 }

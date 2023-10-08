@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.university.master.gomoryhu.Service.Enum.OtuStandard.*;
-
 @Component
 @NoArgsConstructor
 public class Graph {
@@ -26,24 +24,6 @@ public class Graph {
         adjMatrix[u][v] = value;
         adjMatrix[v][u] = value;
         edgeCount++;
-    }
-
-    public void adaptToOTN() {
-        for (int i = 0; i < adjMatrix.length; i++) {
-            for (int j = 0; j < adjMatrix[i].length; j++) {
-                if (adjMatrix[i][j] > 0) {
-                    if (adjMatrix[i][j] <= OTU1.bandwidth) {
-                        adjMatrix[i][j] = OTU1.bandwidth;
-                    } else if (adjMatrix[i][j] <= OTU2.bandwidth) {
-                        adjMatrix[i][j] = OTU2.bandwidth;
-                    } else if (adjMatrix[i][j] <= OTU3.bandwidth) {
-                        adjMatrix[i][j] = OTU3.bandwidth;
-                    } else if (adjMatrix[i][j] <= OTU4.bandwidth) {
-                        adjMatrix[i][j] = OTU4.bandwidth;
-                    }
-                }
-            }
-        }
     }
 
     public String toString() {
