@@ -56,7 +56,7 @@ public class GomoryHuAlgorithm {
         BigDecimal adaptedToOtnResult = new BigDecimal(-1);
 
         if (castResultToOtn) {
-            OtnAdapter.adapt(finalMatrix);  //Adapting final matrix to OTN standard
+            OtnAdapter.adaptMatrix(finalMatrix);  //Adapting final matrix to OTN standard
 
             adaptedToOtnResult = sumMatrixElements(finalMatrix);
             adaptedToOtnResult = divideByTwoBigDecimalValue(adaptedToOtnResult);
@@ -156,7 +156,13 @@ public class GomoryHuAlgorithm {
     }
 
     private Graph buildGraphByEdges(List<Edge> edges) {
-        Graph graph = new Graph(edges.size());
+        int numberOfVertexes = 0;
+
+        for (Edge edge: edges) {
+            numberOfVertexes = Math.max(numberOfVertexes, Math.max(edge.getFrom(), edge.getTo()));
+        }
+
+        Graph graph = new Graph(numberOfVertexes + 1);  // + 1 because count starts from 0
 
         for (Edge edge : edges) {
             graph.addEdge(edge.getFrom(), edge.getTo(), edge.getValue());
@@ -191,7 +197,7 @@ public class GomoryHuAlgorithm {
 
     public GomoryHuResult showResultWithAdaptingToOTN(List<Edge> edges) {
         Graph g = buildGraphByEdges(edges);
-        OtnAdapter.adapt(g.getAdjMatrix());
+        OtnAdapter.adaptMatrix(g.getAdjMatrix());
         return calculateByClassicMethod(g, false);
     }
 }

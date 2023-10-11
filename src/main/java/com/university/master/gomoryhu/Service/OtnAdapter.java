@@ -12,7 +12,7 @@ import static com.university.master.gomoryhu.Service.Enum.OtuStandard.OTU4;
 @NoArgsConstructor
 public class OtnAdapter {
 
-    public static void adapt(double[][] inputAdjMatrix) {
+    public static void adaptMatrix(double[][] inputAdjMatrix) {
         double buffedVale = 0;
 
         for (int i = 0; i < inputAdjMatrix.length; i++) {
