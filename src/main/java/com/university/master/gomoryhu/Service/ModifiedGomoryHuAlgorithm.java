@@ -13,15 +13,22 @@ import java.util.List;
 
 @Service
 @NoArgsConstructor
-public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
+public class ModifiedGomoryHuAlgorithm extends UniversalAlgorithmResolver {
 
-    private GomoryHuResult calculateByClassicMethod(Graph inputGraph, boolean castResultToOtn) {
+    private GomoryHuResult calculateByModifiedMethod(Graph inputGraph) {
         Graph currentGraph = inputGraph;
         List<double[][]> ringGraphs = new ArrayList<>();
+        double ringGraphEdgeValue;
 
         while (getCurrentNumberOfEdges(currentGraph.getAdjMatrix()) > 2) {
-            ringGraphs.add(calculateRingGraph(currentGraph).getAdjMatrix());
-            currentGraph = calculateSubnetwork(currentGraph);
+            ringGraphEdgeValue = getMinGraphEdgeValue(currentGraph.getAdjMatrix()) / 2;  //move to params later
+            ringGraphEdgeValue = OtnAdapter.adapt(ringGraphEdgeValue);
+
+            ringGraphs.add(calculateRingGraph(currentGraph, ringGraphEdgeValue).getAdjMatrix());
+
+            ringGraphEdgeValue = ringGraphEdgeValue * 2; //due duplex channels
+
+            currentGraph = calculateSubnetwork(currentGraph, ringGraphEdgeValue);
         }
 
         int rows = ringGraphs.get(0).length;
@@ -39,6 +46,8 @@ public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
 
         double[][] finalMatrix = new double[rows][cols];
         double[][] currentAdjMatrix = currentGraph.getAdjMatrix();
+        OtnAdapter.adaptMatrix(currentAdjMatrix);
+        castAllNegativeToZero(currentAdjMatrix);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 finalMatrix[i][j] = BigDecimal.valueOf(sumRingMatrix[i][j])
@@ -48,31 +57,21 @@ public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
         }
 
 
-        BigDecimal classicResult = sumMatrixElements(finalMatrix);
-        classicResult = divideByTwoBigDecimalValue(classicResult);
-
-        BigDecimal adaptedToOtnResult = new BigDecimal(-1);
-
-        if (castResultToOtn) {
-            OtnAdapter.adaptMatrix(finalMatrix);  //Adapting final matrix to OTN standard
-
-            adaptedToOtnResult = sumMatrixElements(finalMatrix);
-            adaptedToOtnResult = divideByTwoBigDecimalValue(adaptedToOtnResult);
-        }
+        BigDecimal modifiedResult = sumMatrixElements(finalMatrix);
+        modifiedResult = divideByTwoBigDecimalValue(modifiedResult);
 
         return GomoryHuResult.builder()
-                .defaultResult(classicResult)
-                .adaptedToOtnResult(adaptedToOtnResult)
+                .defaultResult(modifiedResult)
+                .adaptedToOtnResult(new BigDecimal(-1))
                 .build();
     }
 
-    private Graph calculateRingGraph(Graph inputGraph) {
+    private Graph calculateRingGraph(Graph inputGraph, double ringGraphEdgeValue) {
         double[][] inputAdjMatrix = inputGraph.getAdjMatrix();
         int[] existedVertexes = getExistedVertexes(inputAdjMatrix);
         int existedVertexesLength = existedVertexes.length;
 
         Graph ringGraph = new Graph(inputGraph.getVertexCount());
-        double ringGraphEdgeValue = getMinGraphEdgeValue(inputAdjMatrix) / 2;  //move to params later
 
         for (int i = 0, j = 1; i < existedVertexesLength; i++, j++) {
             if (j == existedVertexesLength) {
@@ -84,10 +83,9 @@ public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
         return ringGraph;
     }
 
-    private Graph calculateSubnetwork(Graph inputGraph) {
+    private Graph calculateSubnetwork(Graph inputGraph, double ringGraphEdgeValue) {
         double[][] inputMatrix = inputGraph.getAdjMatrix();
         double[][] snAdjMatrix = new double[inputMatrix.length][inputMatrix[0].length];
-        double igMinEdgeValue = getMinGraphEdgeValue(inputMatrix);
 
         for (int i = 0; i < inputMatrix.length; i++) {
             snAdjMatrix[i] = Arrays.copyOf(inputMatrix[i], inputMatrix[i].length);
@@ -97,7 +95,7 @@ public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
             for (int j = 0; j < snAdjMatrix[i].length; j++) {
                 if (snAdjMatrix[i][j] > 0) {
                     snAdjMatrix[i][j] = BigDecimal.valueOf(snAdjMatrix[i][j])
-                            .subtract(BigDecimal.valueOf(igMinEdgeValue))
+                            .subtract(BigDecimal.valueOf(ringGraphEdgeValue))
                             .doubleValue();
                 }
             }
@@ -108,33 +106,18 @@ public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
         return snGraph;
     }
 
-    public GomoryHuResult showResultByClassicMethod(List<Edge> edges) {
-        Graph g = buildGraphByEdges(edges);
-
-        System.out.println("Original graph");
-        System.out.println(g);
-        System.out.println("----------");
-        System.out.println(getMinGraphEdgeValue(g.getAdjMatrix()) + " - min graph edge value");
-        System.out.println("----------");
-        System.out.println("Ring graph");
-        System.out.println(calculateRingGraph(g));
-        System.out.println("----------");
-        System.out.println("Sn graph");
-        Graph Sngraph = calculateSubnetwork(g);
-        System.out.println(Sngraph);
-        System.out.println("-------");
-        System.out.println("Existed vertexes in original graph");
-        System.out.println(Arrays.toString(getExistedVertexes(g.getAdjMatrix())));
-        System.out.println("-------");
-        System.out.println("Existed vertexes in Sn graph");
-        System.out.println(Arrays.toString(getExistedVertexes(Sngraph.getAdjMatrix())));
-
-        return calculateByClassicMethod(g, true);   //ToDo: Think about moving result of calculation here
+    private void castAllNegativeToZero(double[][] inputAdjMatrix) {
+        for (int i = 0; i < inputAdjMatrix.length; i++) {
+            for (int j = 0; j < inputAdjMatrix[i].length; j++) {
+                if (inputAdjMatrix[i][j] < 0) {
+                    inputAdjMatrix[i][j] = 0;
+                }
+            }
+        }
     }
 
-    public GomoryHuResult showResultWithAdaptingToOTN(List<Edge> edges) {
+    public GomoryHuResult showResultByModifiedMethod(List<Edge> edges) {
         Graph g = buildGraphByEdges(edges);
-        OtnAdapter.adaptMatrix(g.getAdjMatrix());
-        return calculateByClassicMethod(g, false);
+        return calculateByModifiedMethod(g);
     }
 }

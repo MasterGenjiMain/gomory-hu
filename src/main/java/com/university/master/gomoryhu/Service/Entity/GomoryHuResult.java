@@ -13,13 +13,13 @@ import java.math.BigDecimal;
 @Builder
 public class GomoryHuResult {
 
-    BigDecimal classicResult;
+    BigDecimal defaultResult;
     BigDecimal adaptedToOtnResult;
 
     @Override
     public String toString() {
         return "GomoryHuResult{" +
-                "classicResult=" + classicResult +
+                "defaultResult=" + defaultResult +
                 ", adaptedToOtnResult=" + adaptedToOtnResult +
                 '}';
     }
