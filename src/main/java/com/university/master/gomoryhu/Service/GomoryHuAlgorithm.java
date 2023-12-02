@@ -111,23 +111,23 @@ public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
     public GomoryHuResult showResultByClassicMethod(List<Edge> edges) {
         Graph g = buildGraphByEdges(edges);
 
-        System.out.println("Original graph");
-        System.out.println(g);
-        System.out.println("----------");
-        System.out.println(getMinGraphEdgeValue(g.getAdjMatrix()) + " - min graph edge value");
-        System.out.println("----------");
-        System.out.println("Ring graph");
-        System.out.println(calculateRingGraph(g));
-        System.out.println("----------");
-        System.out.println("Sn graph");
-        Graph Sngraph = calculateSubnetwork(g);
-        System.out.println(Sngraph);
-        System.out.println("-------");
-        System.out.println("Existed vertexes in original graph");
-        System.out.println(Arrays.toString(getExistedVertexes(g.getAdjMatrix())));
-        System.out.println("-------");
-        System.out.println("Existed vertexes in Sn graph");
-        System.out.println(Arrays.toString(getExistedVertexes(Sngraph.getAdjMatrix())));
+//        System.out.println("Original graph");
+//        System.out.println(g);
+//        System.out.println("----------");
+//        System.out.println(getMinGraphEdgeValue(g.getAdjMatrix()) + " - min graph edge value");
+//        System.out.println("----------");
+//        System.out.println("Ring graph");
+//        System.out.println(calculateRingGraph(g));
+//        System.out.println("----------");
+//        System.out.println("Sn graph");
+//        Graph Sngraph = calculateSubnetwork(g);
+//        System.out.println(Sngraph);
+//        System.out.println("-------");
+//        System.out.println("Existed vertexes in original graph");
+//        System.out.println(Arrays.toString(getExistedVertexes(g.getAdjMatrix())));
+//        System.out.println("-------");
+//        System.out.println("Existed vertexes in Sn graph");
+//        System.out.println(Arrays.toString(getExistedVertexes(Sngraph.getAdjMatrix())));
 
         return calculateByClassicMethod(g, true);   //ToDo: Think about moving result of calculation here
     }
@@ -135,6 +135,6 @@ public class GomoryHuAlgorithm extends UniversalAlgorithmResolver {
     public GomoryHuResult showResultWithAdaptingToOTN(List<Edge> edges) {
         Graph g = buildGraphByEdges(edges);
         OtnAdapter.adaptMatrix(g.getAdjMatrix());
-        return calculateByClassicMethod(g, false);
+        return calculateByClassicMethod(g, true);
     }
 }

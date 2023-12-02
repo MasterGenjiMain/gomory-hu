@@ -61,8 +61,69 @@ public class ModifiedGomoryHuAlgorithm extends UniversalAlgorithmResolver {
         modifiedResult = divideByTwoBigDecimalValue(modifiedResult);
 
         return GomoryHuResult.builder()
-                .defaultResult(modifiedResult)
-                .adaptedToOtnResult(new BigDecimal(-1))
+                .defaultResult(new BigDecimal(-1))
+                .adaptedToOtnResult(modifiedResult)
+                .build();
+    }
+
+    private GomoryHuResult calculateByModifiedMethod_1TimeCast(Graph inputGraph) {
+        Graph currentGraph = inputGraph;
+        List<double[][]> ringGraphs = new ArrayList<>();
+        double ringGraphEdgeValue;
+
+        if (getCurrentNumberOfEdges(currentGraph.getAdjMatrix()) > 2) {
+            ringGraphEdgeValue = getMinGraphEdgeValue(currentGraph.getAdjMatrix()) / 2;  //move to params later
+            ringGraphEdgeValue = OtnAdapter.adapt(ringGraphEdgeValue);
+
+            ringGraphs.add(calculateRingGraph(currentGraph, ringGraphEdgeValue).getAdjMatrix());
+
+            ringGraphEdgeValue = ringGraphEdgeValue * 2; //due duplex channels
+
+            currentGraph = calculateSubnetwork(currentGraph, ringGraphEdgeValue);
+        }
+
+        double minGraphEdgeValue;
+
+        while (getCurrentNumberOfEdges(currentGraph.getAdjMatrix()) > 2) {
+            minGraphEdgeValue = getMinGraphEdgeValue(currentGraph.getAdjMatrix());
+            ringGraphs.add(calculateRingGraph(currentGraph, minGraphEdgeValue / 2).getAdjMatrix());
+            currentGraph = calculateSubnetwork(currentGraph, minGraphEdgeValue);
+        }
+
+        int rows = ringGraphs.get(0).length;
+        int cols = ringGraphs.get(0)[0].length;
+
+        double[][] sumRingMatrix = new double[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (double[][] matrix : ringGraphs) {
+                    sumRingMatrix[i][j] += matrix[i][j];
+                }
+            }
+        }
+
+        double[][] finalMatrix = new double[rows][cols];
+        double[][] currentAdjMatrix = currentGraph.getAdjMatrix();
+        OtnAdapter.adaptMatrix(currentAdjMatrix);
+        castAllNegativeToZero(currentAdjMatrix);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                finalMatrix[i][j] = BigDecimal.valueOf(sumRingMatrix[i][j])
+                        .add(BigDecimal.valueOf(currentAdjMatrix[i][j]))
+                        .doubleValue();
+            }
+        }
+
+        OtnAdapter.adaptMatrix(finalMatrix);  //Adapting final matrix to OTN standard
+
+        BigDecimal modifiedResult = sumMatrixElements(finalMatrix);
+        modifiedResult = divideByTwoBigDecimalValue(modifiedResult);
+
+
+        return GomoryHuResult.builder()
+                .defaultResult(new BigDecimal(-1))
+                .adaptedToOtnResult(modifiedResult)
                 .build();
     }
 
@@ -119,5 +180,10 @@ public class ModifiedGomoryHuAlgorithm extends UniversalAlgorithmResolver {
     public GomoryHuResult showResultByModifiedMethod(List<Edge> edges) {
         Graph g = buildGraphByEdges(edges);
         return calculateByModifiedMethod(g);
+    }
+
+    public GomoryHuResult showResultByModifiedMethod2(List<Edge> edges) {
+        Graph g = buildGraphByEdges(edges);
+        return calculateByModifiedMethod_1TimeCast(g);
     }
 }
